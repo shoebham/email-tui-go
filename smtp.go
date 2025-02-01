@@ -119,7 +119,7 @@ func forwardEmail(from string, to []string, subject string, data []byte) error {
 
 	serverAddr := fmt.Sprintf("%s:%d", smtpHost, smtpPort)
 
-	formattedData := formatEmailData(from, to, "Forwarded Email", string(data))
+	formattedData := formatEmailData(from, to, subject, string(data))
 
 	// Send the email
 	err := smtp.SendMail(serverAddr, auth, from, to, formattedData)
