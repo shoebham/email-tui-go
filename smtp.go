@@ -91,8 +91,7 @@ func handleConnection(conn net.Conn) {
 			log.Println("Received mail from:", from, "to:", to, "data:", data)
 			conn.Write([]byte("250 OK Message accepted\r\n"))
 
-			// Forward the email by performing MX lookups and sending to destination servers.
-			err := forwardEmail(from, to, []byte(data))
+			err := forwardEmail(from, to, "forwarded email", []byte(data))
 			if err != nil {
 				log.Printf("Error forwarding email: %v", err)
 				fmt.Fprintf(conn, "550 Failed to forward mail\r\n")
@@ -111,7 +110,6 @@ func handleConnection(conn net.Conn) {
 }
 
 func forwardEmail(from string, to []string, subject string, data []byte) error {
-
 	smtpHost := os.Getenv("smtpHost")
 	smtpPort := 587
 	smtpUsername := os.Getenv("smtpUsername")
