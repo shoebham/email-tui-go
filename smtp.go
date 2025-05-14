@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"net"
 	"net/smtp"
@@ -21,6 +22,11 @@ var smtpUsername string
 var smtpPassword string
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file: %s", err)
+	}
+
 	ln, err := net.Listen("tcp", ":2525")
 	if err != nil {
 		log.Fatal("Error starting server: ", err)
@@ -130,8 +136,10 @@ func handleConnection(conn net.Conn) {
 }
 
 func forwardEmail(from string, to []string, subject string, data []byte) error {
-	serverAddr := fmt.Sprintf("%s:%d", smtpHost, smtpPort)
+	serverAddr := fmt.Sprintf("%s:%s", smtpHost, smtpPort)
+	fmt.Println("Server address:", serverAddr)
 	formattedData := formatEmailData(from, to, subject, string(data))
+	fmt.Println("Formatted data:", string(formattedData))
 	// Send the email
 	err := smtp.SendMail(serverAddr, auth, from, to, formattedData)
 	if err != nil {
