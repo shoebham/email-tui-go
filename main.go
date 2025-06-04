@@ -44,17 +44,36 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+
 	case model.SelectedEmailMsg:
-		m.email = &model.EmailModel{
-			CurrentItem: msg.Email,
+		if msg.Email == (model.EmailItem{}) {
+			m.currentPage = inboxPage
+
+		} else {
+			m.email = &model.EmailModel{
+				CurrentItem: msg.Email,
+			}
+			m.currentPage = emailPage
 		}
-		m.currentPage = emailPage
 		return m, nil
+
 	case model.LoginSuccessMsg:
 		m.currentPage = inboxPage
 		m.Update(utils.GetWindowMsgTypeForInbox())
+
 	}
+
 	switch m.currentPage {
+	case emailPage:
+		var cmd tea.Cmd
+		updatedModel, cmd := m.email.Update(msg)
+		m.email = updatedModel.(*model.EmailModel)
+		if cmd != nil {
+			return m, cmd
+
+		}
+		return m, nil
+
 	case inboxPage:
 		var cmd tea.Cmd
 		updatedModel, cmd := m.inbox.Update(msg)

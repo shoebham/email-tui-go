@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"fmt"
@@ -6,52 +6,58 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type emailModel struct {
-	currentItem emailItem
+type EmailModel struct {
+	CurrentItem EmailItem
 }
-type emailItem struct {
+type EmailItem struct {
 	subject  string
 	body     string
 	sender   string
 	receiver string
 }
 
-func newEmailModel(item emailItem) emailModel {
-	return emailModel{
-		currentItem: item,
+func InitialEmailModel(item EmailItem) *EmailModel {
+	return &EmailModel{
+		CurrentItem: item,
 	}
 }
 
-func (i emailItem) Title() string       { return i.subject }
-func (i emailItem) Body() string        { return i.body }
-func (i emailItem) Description() string { return i.body }
-func (i emailItem) FilterValue() string { return i.subject }
-func (i emailItem) Receiver() string    { return i.receiver }
-func (i emailItem) Sender() string      { return i.sender }
+func (i EmailItem) Title() string       { return i.subject }
+func (i EmailItem) Body() string        { return i.body }
+func (i EmailItem) Description() string { return i.body }
+func (i EmailItem) FilterValue() string { return i.subject }
+func (i EmailItem) Receiver() string    { return i.receiver }
+func (i EmailItem) Sender() string      { return i.sender }
 
-func (m emailModel) Init() tea.Cmd {
+func (m *EmailModel) Init() tea.Cmd {
 	// Initialize the email model, if needed
 	return nil
 }
-func (m emailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *EmailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "backspace":
+			// Handle backspace to go back to the inbox
+			return m, func() tea.Msg {
+				return SelectedEmailMsg{Email: EmailItem{}}
+			}
 		}
 	}
+
 	return m, nil
 }
-func (m emailModel) View() string {
-	if m.currentItem == nil {
+func (m *EmailModel) View() string {
+	if m.CurrentItem == (EmailItem{}) {
 		return "No email selected"
 	}
-	s := selectedEmailView(m.currentItem.(emailItem))
+	s := selectedEmailView(m.CurrentItem)
 	return appStyle.Render(s)
 }
 
-func selectedEmailView(item emailItem) string {
+func selectedEmailView(item EmailItem) string {
 	border := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#04B575")).
