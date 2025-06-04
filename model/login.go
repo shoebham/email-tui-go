@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"fmt"
@@ -6,11 +6,10 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"os"
 	"strings"
 )
 
-type loginModel struct {
+type LoginModel struct {
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
@@ -29,8 +28,8 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
-func initialModel() loginModel {
-	m := loginModel{inputs: make([]textinput.Model, 2)}
+func InitialLoginModel() *LoginModel {
+	m := LoginModel{inputs: make([]textinput.Model, 2)}
 
 	var t textinput.Model
 
@@ -54,14 +53,16 @@ func initialModel() loginModel {
 		}
 		m.inputs[i] = t
 	}
-	return m
+	m.focusIndex = 0
+	return (&m)
 }
 
-func (m loginModel) Init() tea.Cmd {
+func (m LoginModel) Init() tea.Cmd {
+
 	return textinput.Blink
 }
 
-func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -87,8 +88,10 @@ func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Did the user press enter while the submit button was focused?
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
-
-				return m, tea.Quit
+				email := m.inputs[0].Value()
+				return m, func() tea.Msg {
+					return LoginSuccessMsg{Username: email}
+				}
 			}
 
 			// Cycle indexes
@@ -105,18 +108,16 @@ func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			cmds := make([]tea.Cmd, len(m.inputs))
-			for i := 0; i <= len(m.inputs)-1; i++ {
+			for i := range m.inputs {
 				if i == m.focusIndex {
-					// Set focused state
-					cmds[i] = m.inputs[i].Focus()
+					cmds[i] = m.inputs[i].Focus() // returns a Cmd to set focus
 					m.inputs[i].PromptStyle = focusedStyle
 					m.inputs[i].TextStyle = focusedStyle
-					continue
+				} else {
+					m.inputs[i].Blur() // returns updated model and cmd
+					m.inputs[i].PromptStyle = noStyle
+					m.inputs[i].TextStyle = noStyle
 				}
-				// Remove focused state
-				m.inputs[i].Blur()
-				m.inputs[i].PromptStyle = noStyle
-				m.inputs[i].TextStyle = noStyle
 			}
 
 			return m, tea.Batch(cmds...)
@@ -129,7 +130,7 @@ func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
+func (m *LoginModel) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
 	// Only text inputs with Focus() set will respond, so it's safe to simply
@@ -141,7 +142,7 @@ func (m *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m loginModel) View() string {
+func (m LoginModel) View() string {
 	var b strings.Builder
 	for i := range m.inputs {
 		b.WriteString(m.inputs[i].View())
@@ -160,11 +161,4 @@ func (m loginModel) View() string {
 	b.WriteString(helpStyle.Render(" (ctrl+r to change style)"))
 
 	return b.String()
-}
-
-func main() {
-	if _, err := tea.NewProgram(initialModel()).Run(); err != nil {
-		fmt.Printf("could not start program: %s\n", err)
-		os.Exit(1)
-	}
 }
