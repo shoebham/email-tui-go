@@ -15,29 +15,25 @@ type inboxMsg struct {
 	mails []list.Item
 }
 
-type SelectedEmailMsg struct {
-	Email EmailItem
-}
-
 var (
 	appStyle   = lipgloss.NewStyle().Padding(1, 2)
 	titleStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFDF5")).
-		Background(lipgloss.Color("#25A065")).
-		Padding(0, 1)
+			Foreground(lipgloss.Color("#FFFDF5")).
+			Background(lipgloss.Color("#25A065")).
+			Padding(0, 1)
 
 	statusMessageStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-		Render
+				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
+				Render
 	senderStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-		Padding(0, 1).
-		Render
+			Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
+			Padding(0, 1).
+			Render
 
 	receiverStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#A9A9A9")).
-		Padding(0, 1).
-		Render
+			Foreground(lipgloss.Color("#A9A9A9")).
+			Padding(0, 1).
+			Render
 )
 
 func fetchEmails() tea.Msg {
