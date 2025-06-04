@@ -1,45 +1,43 @@
-package main
+package model
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"os"
 )
 
-type inboxModel struct {
+type InboxModel struct {
 	mails    list.Model
-	selected emailItem
+	selected EmailItem
 }
 
 type inboxMsg struct {
 	mails []list.Item
 }
 
-type selectedEmailMsg struct {
-	email emailItem
+type SelectedEmailMsg struct {
+	Email EmailItem
 }
 
 var (
 	appStyle   = lipgloss.NewStyle().Padding(1, 2)
 	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFDF5")).
-			Background(lipgloss.Color("#25A065")).
-			Padding(0, 1)
+		Foreground(lipgloss.Color("#FFFDF5")).
+		Background(lipgloss.Color("#25A065")).
+		Padding(0, 1)
 
 	statusMessageStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-				Render
+		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
+		Render
 	senderStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-			Padding(0, 1).
-			Render
+		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
+		Padding(0, 1).
+		Render
 
 	receiverStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#A9A9A9")).
-			Padding(0, 1).
-			Render
+		Foreground(lipgloss.Color("#A9A9A9")).
+		Padding(0, 1).
+		Render
 )
 
 func fetchEmails() tea.Msg {
@@ -51,7 +49,7 @@ func fetchEmails() tea.Msg {
 	}
 	items := make([]list.Item, len(emails))
 	for i, email := range emails {
-		items[i] = emailItem{
+		items[i] = EmailItem{
 			subject:  email,
 			body:     "This is a sample email body.",
 			sender:   "shubham",
@@ -61,26 +59,27 @@ func fetchEmails() tea.Msg {
 
 	return inboxMsg{mails: items}
 }
-func initialModel() inboxModel {
+
+func InitialInboxModel() *InboxModel {
 	delegate := list.NewDefaultDelegate()
 	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#04B575"))
 	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#04B575"))
 
 	// Create initial items
 	items := []list.Item{
-		emailItem{
+		EmailItem{
 			subject:  "Email 1: Welcome to our service!",
 			body:     "This is a sample email body.",
 			sender:   "shubham",
 			receiver: "shubham",
 		},
-		emailItem{
+		EmailItem{
 			subject:  "Email 2: Your account has been created.",
 			body:     "This is a sample email body.",
 			sender:   "shubham",
 			receiver: "shubham",
 		},
-		emailItem{
+		EmailItem{
 			subject:  "Email 3: Don't forget to verify your email.",
 			body:     "This is a sample email body.",
 			sender:   "shubham",
@@ -93,23 +92,23 @@ func initialModel() inboxModel {
 	mails.SetShowStatusBar(false)
 	mails.SetFilteringEnabled(false)
 
-	return inboxModel{
+	return (&InboxModel{
 		mails:    mails,
-		selected: emailItem{},
-	}
+		selected: EmailItem{},
+	})
 }
 
-func (m inboxModel) Init() tea.Cmd {
+func (m *InboxModel) Init() tea.Cmd {
 	// Set list styles
 	m.mails.Styles.Title = titleStyle
 
-	// Return the command directly
 	return fetchEmails
 }
-func (m inboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+
 	case tea.WindowSizeMsg:
 		h, v := appStyle.GetFrameSize()
 		m.mails.SetSize(msg.Width-h, msg.Height-v)
@@ -120,14 +119,14 @@ func (m inboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			selectedEmail := m.mails.SelectedItem()
-			if email, ok := selectedEmail.(emailItem); ok {
+			if email, ok := selectedEmail.(EmailItem); ok {
 				return m, func() tea.Msg {
-					return selectedEmailMsg{email: email}
+					return SelectedEmailMsg{Email: email}
 				}
 			}
 		case "backspace":
-			if m.selected != (emailItem{}) {
-				m.selected = emailItem{}
+			if m.selected != (EmailItem{}) {
+				m.selected = EmailItem{}
 			}
 		}
 	}
@@ -141,15 +140,8 @@ func (m inboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m inboxModel) View() string {
+func (m *InboxModel) View() string {
 	var s string
 	s = m.mails.View()
 	return appStyle.Render(s) + "\n"
-}
-
-func main() {
-	if _, err := tea.NewProgram(initialModel()).Run(); err != nil {
-		fmt.Printf("could not start program: %s\n", err)
-		os.Exit(1)
-	}
 }

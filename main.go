@@ -2,6 +2,7 @@ package main
 
 import (
 	"email-client/model"
+	"email-client/utils"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -51,30 +52,23 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case model.LoginSuccessMsg:
 		m.currentPage = inboxPage
-		m.inbox = model.InitialInboxModel()
-		return m, nil
+		m.Update(utils.GetWindowMsgTypeForInbox())
+	}
+	switch m.currentPage {
+	case inboxPage:
+		var cmd tea.Cmd
+		updatedModel, cmd := m.inbox.Update(msg)
+		m.inbox = updatedModel.(*model.InboxModel)
+		return m, cmd
+	case loginPage:
+		var cmd tea.Cmd
+		updatedModel, cmd := m.login.Update(msg)
+		m.login = updatedModel.(*model.LoginModel)
+		return m, cmd
 	default:
-		switch m.currentPage {
-		case inboxPage:
-			var cmd tea.Cmd
-			updatedModel, cmd := m.inbox.Update(msg)
-			m.inbox = updatedModel.(*model.InboxModel)
-			if cmd != nil {
-				return m, cmd
-			}
-			return m, cmd
-		case loginPage:
-			var cmd tea.Cmd
-			updatedModel, cmd := m.login.Update(msg)
-			m.login = updatedModel.(*model.LoginModel)
-			return m, cmd
-		default:
-			panic("unhandled default case")
-
-		}
+		panic("unhandled default case")
 	}
 	return m, nil
-
 }
 
 func (m *rootModel) View() string {
@@ -101,4 +95,5 @@ func main() {
 	if err := p.Start(); err != nil {
 		panic(err)
 	}
+
 }
