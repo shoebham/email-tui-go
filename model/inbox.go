@@ -7,12 +7,14 @@ import (
 )
 
 type InboxModel struct {
-	mails    list.Model
-	selected EmailItem
+	mails          []EmailItem
+	emailListModel []emailListModel
+	currentIdx     int
+	selected       EmailItem
 }
 
 type inboxMsg struct {
-	mails []list.Item
+	mails []EmailItem
 }
 
 var (
@@ -22,6 +24,7 @@ var (
 			Background(lipgloss.Color("#25A065")).
 			Padding(0, 1)
 
+	borderStyle        = lipgloss.NewStyle().BorderStyle(lipgloss.DoubleBorder())
 	statusMessageStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
 				Render
@@ -34,6 +37,13 @@ var (
 			Foreground(lipgloss.Color("#A9A9A9")).
 			Padding(0, 1).
 			Render
+	// current email style should be like when i select something like the
+	//whole background should be different and the text should be highlighted
+	currentEmailStyle = lipgloss.NewStyle().
+				Background(lipgloss.Color("#04B575")).
+				Foreground(lipgloss.Color("#FFFDF5")).
+				Width(100).
+				Height(1)
 )
 
 func fetchEmails() tea.Msg {
@@ -43,7 +53,7 @@ func fetchEmails() tea.Msg {
 		"Email 2: Your account has been created.",
 		"Email 3: Don't forget to verify your email.",
 	}
-	items := make([]list.Item, len(emails))
+	items := make([]EmailItem, len(emails))
 	for i, email := range emails {
 		items[i] = EmailItem{
 			subject:  email,
@@ -62,7 +72,7 @@ func InitialInboxModel() *InboxModel {
 	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#04B575"))
 
 	// Create initial items
-	items := []list.Item{
+	items := []EmailItem{
 		EmailItem{
 			subject:  "Email 1: Welcome to our service!",
 			body:     "This is a sample email body.",
@@ -83,20 +93,37 @@ func InitialInboxModel() *InboxModel {
 		},
 	}
 
-	mails := list.New(items, delegate, 0, 0)
-	mails.Title = titleStyle.Render("Inbox")
-	mails.SetShowStatusBar(false)
-	mails.SetFilteringEnabled(false)
-
-	return (&InboxModel{
+	mails := make([]EmailItem, len(items))
+	return &InboxModel{
 		mails:    mails,
 		selected: EmailItem{},
-	})
+		emailListModel: []emailListModel{{
+			sender:    "shubham",
+			subject:   "Welcome to our service!",
+			shortBody: "This is a sample email body.",
+		}, {
+			sender:    "shubham",
+			subject:   "Welcome to our service!",
+			shortBody: "This is a sample email body.",
+		}, {
+			sender:    "shubham",
+			subject:   "Welcome to our service!",
+			shortBody: "This is a sample email body.",
+		}, {
+			sender:    "shubham",
+			subject:   "Welcome to our service!",
+			shortBody: "This is a sample email body.",
+		}, {
+			sender:    "shubham",
+			subject:   "Welcome to our service!",
+			shortBody: "This is a sample email body.",
+		},
+		},
+	}
+
 }
 
 func (m *InboxModel) Init() tea.Cmd {
-	// Set list styles
-	m.mails.Styles.Title = titleStyle
 
 	return fetchEmails
 }
@@ -105,20 +132,25 @@ func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 
-	case tea.WindowSizeMsg:
-		h, v := appStyle.GetFrameSize()
-		m.mails.SetSize(msg.Width-h, msg.Height-v)
-
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "j", "down":
+			if m.currentIdx <= len(m.mails) {
+				m.currentIdx++
+			}
+		case "k", "up":
+			if m.currentIdx > 0 {
+				m.currentIdx--
+			}
 		case "enter":
-			selectedEmail := m.mails.SelectedItem()
-			if email, ok := selectedEmail.(EmailItem); ok {
-				return m, func() tea.Msg {
-					return SelectedEmailMsg{Email: email}
-				}
+			if m.currentIdx <= len(m.mails) {
+				selectedEmail := m.mails[m.currentIdx]
+				m.selected = selectedEmail
+			}
+			return m, func() tea.Msg {
+				return SelectedEmailMsg{Email: m.selected}
 			}
 		case "backspace":
 			if m.selected != (EmailItem{}) {
@@ -127,17 +159,32 @@ func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	var cmd tea.Cmd
-	m.mails, cmd = m.mails.Update(msg)
-	if cmd != nil {
-		cmds = append(cmds, cmd)
+	if inboxMsg, ok := msg.(inboxMsg); ok {
+		m.mails = inboxMsg.mails
+		if len(m.mails) > 0 {
+			m.currentIdx = 0 // Reset current index to the first email
+		} else {
+			m.currentIdx = -1 // No emails available
+		}
 	}
-
 	return m, tea.Batch(cmds...)
 }
 
 func (m *InboxModel) View() string {
 	var s string
-	s = m.mails.View()
+
+	if m.currentIdx == -1 {
+		m = InitialInboxModel()
+	}
+	s += borderStyle.Render("Inbox") + "\n\n"
+
+	for i, email := range m.emailListModel {
+		if i == m.currentIdx {
+			s += currentEmailStyle.Render()
+		} else {
+			s += email.View() + "\n"
+		}
+	}
+
 	return appStyle.Render(s) + "\n"
 }
