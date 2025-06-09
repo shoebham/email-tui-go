@@ -2,7 +2,7 @@ package main
 
 import (
 	"email-client/model"
-	"email-client/utils"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -59,7 +59,7 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case model.LoginSuccessMsg:
 		m.currentPage = inboxPage
-		m.Update(utils.GetWindowMsgTypeForInbox())
+		return m, m.inbox.Init()
 
 	}
 
@@ -109,7 +109,7 @@ func main() {
 		inbox:       model.InitialInboxModel(),
 		login:       model.InitialLoginModel(),
 		email:       model.InitialEmailModel(model.EmailItem{}),
-	})
+	}, tea.WithAltScreen(), tea.WithMouseCellMotion())
 
 	if err := p.Start(); err != nil {
 		panic(err)

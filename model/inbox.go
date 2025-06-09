@@ -1,7 +1,8 @@
 package model
 
 import (
-	"github.com/charmbracelet/bubbles/list"
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -24,10 +25,15 @@ var (
 			Background(lipgloss.Color("#25A065")).
 			Padding(0, 1)
 
-	borderStyle        = lipgloss.NewStyle().BorderStyle(lipgloss.DoubleBorder())
+	borderStyle = lipgloss.NewStyle().
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#25A065")).
+			Padding(1, 2)
+
 	statusMessageStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
 				Render
+
 	senderStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
 			Padding(0, 1).
@@ -37,13 +43,30 @@ var (
 			Foreground(lipgloss.Color("#A9A9A9")).
 			Padding(0, 1).
 			Render
-	// current email style should be like when i select something like the
-	//whole background should be different and the text should be highlighted
-	currentEmailStyle = lipgloss.NewStyle().
-				Background(lipgloss.Color("#04B575")).
-				Foreground(lipgloss.Color("#FFFDF5")).
+
+	// Styling for the email list items
+	normalItemStyle = lipgloss.NewStyle().
+			Padding(0, 1).
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#25A065")).
+			Width(100).
+			Height(3)
+
+	selectedItemStyle = lipgloss.NewStyle().
+				Background(lipgloss.Color("#FFFFFF")).
+				Foreground(lipgloss.Color("#FFFFFF")).
+				Padding(0, 1).
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("#FFFDF5")).
 				Width(100).
-				Height(1)
+				Height(3)
+
+	subjectStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("#FFFDF5"))
+
+	bodyStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#A9A9A9"))
 )
 
 func fetchEmails() tea.Msg {
@@ -67,9 +90,6 @@ func fetchEmails() tea.Msg {
 }
 
 func InitialInboxModel() *InboxModel {
-	delegate := list.NewDefaultDelegate()
-	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("#04B575"))
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("#04B575"))
 
 	// Create initial items
 	items := []EmailItem{
@@ -176,15 +196,22 @@ func (m *InboxModel) View() string {
 	if m.currentIdx == -1 {
 		m = InitialInboxModel()
 	}
-	s += borderStyle.Render("Inbox") + "\n\n"
+	s += titleStyle.Render("📧 Inbox") + "\n\n"
 
 	for i, email := range m.emailListModel {
+		style := normalItemStyle
 		if i == m.currentIdx {
-			s += currentEmailStyle.Render()
-		} else {
-			s += email.View() + "\n"
+			style = selectedItemStyle
 		}
+
+		content := fmt.Sprintf("%s\n%s\n%s",
+			subjectStyle.Render(email.subject),
+			senderStyle(email.sender),
+			bodyStyle.Render(email.shortBody),
+		)
+
+		s += style.Render(content) + "\n"
 	}
 
-	return appStyle.Render(s) + "\n"
+	return appStyle.Render(s)
 }
