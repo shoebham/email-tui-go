@@ -1,4 +1,4 @@
-package model
+package utils
 
 const (
 	White  string = "#FFFFFF"

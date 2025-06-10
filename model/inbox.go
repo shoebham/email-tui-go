@@ -1,10 +1,10 @@
 package model
 
 import (
+	"email-client/utils"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type InboxModel struct {
@@ -18,63 +18,6 @@ type inboxMsg struct {
 }
 
 // create a enum of colors that i can access
-
-var (
-	appStyle = lipgloss.NewStyle().
-			Padding(1, 2).
-			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})
-
-	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFDF5")).
-			Background(lipgloss.Color("#25A065")).
-			Padding(0, 1)
-
-	statusMessageStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-				Render
-
-	senderStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White})
-
-	subjectStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
-			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})
-
-	receiverStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#A9A9A9")).
-			Padding(0, 1).
-			Render
-
-	bottomBorder = lipgloss.Border{
-		Bottom: "─",
-	}
-	// Styling for the email list items
-	normalItemStyle = lipgloss.NewStyle().
-			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-			Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-			Border(bottomBorder).
-			BorderForeground().
-			Width(100)
-
-	selectedItemStyle = lipgloss.NewStyle().
-				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
-				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
-				Width(100)
-
-	selectedSenderStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
-
-	selectedSubjectStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
-)
 
 func fetchEmails() tea.Msg {
 	// Simulate fetching emails
@@ -180,20 +123,20 @@ func (m *InboxModel) View() string {
 	if m.currentIdx == -1 {
 		m = InitialInboxModel()
 	}
-	s += titleStyle.Render("📧 Inbox") + "\n\n"
+	s += utils.TitleStyle.MarginLeft(50).Render("Inbox") + "\n\n"
 	for i, email := range m.mails {
-		style := normalItemStyle
+		style := utils.NormalItemStyle
 
-		sender := senderStyle.Render(email.sender)
-		subject := subjectStyle.PaddingLeft(2).Render(email.subject)
+		sender := utils.SenderStyle.Render(email.sender)
+		subject := utils.SubjectStyle.PaddingLeft(2).Render(email.subject)
 		if i == m.currentIdx {
-			style = selectedItemStyle
-			sender = selectedSenderStyle.Render(email.sender)
-			subject = selectedSubjectStyle.PaddingLeft(2).Render(email.subject)
+			style = utils.SelectedItemStyle
+			sender = utils.SelectedSenderStyle.Render(email.sender)
+			subject = utils.SelectedSubjectStyle.PaddingLeft(2).Render(email.subject)
 		}
 		content := fmt.Sprintf("%s%s", sender, subject)
 		s += style.Render(content) + "\n"
 	}
 
-	return appStyle.Render(s)
+	return utils.AppStyle.Render(s)
 }

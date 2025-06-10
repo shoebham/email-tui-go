@@ -1,6 +1,7 @@
 package model
 
 import (
+	"email-client/utils"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -54,27 +55,19 @@ func (m *EmailModel) View() string {
 		return "No email selected"
 	}
 	s := selectedEmailView(m.CurrentItem)
-	return appStyle.Render(s)
+	return utils.AppStyle.Render(s)
 }
 
 func selectedEmailView(item EmailItem) string {
-	border := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#04B575")).
-		AlignVertical(lipgloss.Center).
-		AlignHorizontal(lipgloss.Center).
-		Padding(1, 2).
-		Render
-	return border(
-		titleStyle.Render(item.Title()) + "\n" +
-			lipgloss.NewStyle().Padding(1, 2).Render(
-				fmt.Sprintf(
-					"Description: %s\nSender: %s\nReceiver: %s",
-					item.Body(),
-					senderStyle.Render(item.Sender()),
-					receiverStyle(item.Receiver()),
-				),
-			) + "\n" +
-			statusMessageStyle("Press 'backspace' to go back to the inbox") + "\n")
+	emailStyle := utils.SelectedEmailStyle
+	return emailStyle.Padding(1).Render(
+		fmt.Sprintf(
+			"%s\t%s\n%s\n%s",
+			utils.SubjectStyle.PaddingBottom(1).Render(item.Title()+utils.SenderStyle.Render("Sender: "+item.Sender())),
+
+			utils.ReceiverStyle.AlignHorizontal(lipgloss.Right).Render("Receiver: "+item.Receiver()),
+			utils.SelectedEmailBodyStyle.Render(item.Body()),
+		),
+	) + "\n" + lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Render("Press 'backspace' to return to inbox")
 
 }
