@@ -29,8 +29,14 @@ func fetchEmails() tea.Msg {
 	items := make([]EmailItem, len(emails))
 	for i, email := range emails {
 		items[i] = EmailItem{
-			subject:  email,
-			body:     "This is a sample email body.",
+			subject: email,
+			body: "This is a sample email body.\n" +
+				"This is a sample email body.\n" +
+				"This is a sample email body.\n" +
+				"This is a sample email body.\n" +
+				"This is a sample email body.\n" +
+				"This is a sample email body.\n" +
+				"This is a sample email body.\n",
 			sender:   "shubham",
 			receiver: "shubham",
 		}
@@ -45,7 +51,7 @@ func InitialInboxModel() *InboxModel {
 	items := []EmailItem{
 		EmailItem{
 			subject:  "Email 1: Welcome to our service!",
-			body:     "This is a sample email body.",
+			body:     "This is a sample email body.\nThis is a sample email body.\nThis is a sample email body.\nThis is a sample email body.",
 			sender:   "shubham",
 			receiver: "shubham",
 		},
@@ -127,12 +133,12 @@ func (m *InboxModel) View() string {
 	for i, email := range m.mails {
 		style := utils.NormalItemStyle
 
-		sender := utils.SenderStyle.Render(email.sender)
-		subject := utils.SubjectStyle.PaddingLeft(2).Render(email.subject)
+		sender := utils.SenderStyle.Render(email.sender + "\t")
+		subject := utils.SubjectStyle.Render(email.subject)
 		if i == m.currentIdx {
 			style = utils.SelectedItemStyle
-			sender = utils.SelectedSenderStyle.Render(email.sender)
-			subject = utils.SelectedSubjectStyle.PaddingLeft(2).Render(email.subject)
+			sender = utils.SelectedSenderStyle.Render(email.sender + "\t")
+			subject = utils.SelectedSubjectStyle.Render(email.subject)
 		}
 		content := fmt.Sprintf("%s%s", sender, subject)
 		s += style.Render(content) + "\n"

@@ -50,8 +50,18 @@ var (
 				Border(lipgloss.RoundedBorder()).
 				Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
 				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-				BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
-				Padding(1, 2)
+				BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White})
+	SelectedEmailSubjectStyle = lipgloss.NewStyle().
+					Bold(true).
+					Border(bottomBorder).
+					BorderBackground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+					BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+					Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+					Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+					AlignHorizontal(lipgloss.Center).
+					AlignVertical(lipgloss.Center).
+					Width(97)
+
 	SelectedEmailBodyStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
 				Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})

@@ -60,12 +60,14 @@ func (m *EmailModel) View() string {
 
 func selectedEmailView(item EmailItem) string {
 	emailStyle := utils.SelectedEmailStyle
+	senderPaddingLeft := (100 - len("Sender: "+item.Sender()) - 2)
+	receiverPaddingLeft := (100 - len("Receiver: "+item.Receiver())) - 2
 	return emailStyle.Padding(1).Render(
 		fmt.Sprintf(
-			"%s\t%s\n%s\n%s",
-			utils.SubjectStyle.PaddingBottom(1).Render(item.Title()+utils.SenderStyle.Render("Sender: "+item.Sender())),
-
-			utils.ReceiverStyle.AlignHorizontal(lipgloss.Right).Render("Receiver: "+item.Receiver()),
+			"%s\n%s\n%s\n%s\n%s",
+			utils.SelectedEmailSubjectStyle.Render(item.Title()),
+			utils.SenderStyle.PaddingLe(senderPaddingLeft).Render("Sender: "+item.Sender()),
+			utils.ReceiverStyle.PaddingLeft(receiverPaddingLeft).Render("Receiver: "+item.Receiver()),
 			utils.SelectedEmailBodyStyle.Render(item.Body()),
 		),
 	) + "\n" + lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Render("Press 'backspace' to return to inbox")
