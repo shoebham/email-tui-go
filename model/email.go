@@ -66,7 +66,7 @@ func selectedEmailView(item EmailItem) string {
 		fmt.Sprintf(
 			"%s\n%s\n%s\n%s\n%s",
 			utils.SelectedEmailSubjectStyle.Render(item.Title()),
-			utils.SenderStyle.PaddingLe(senderPaddingLeft).Render("Sender: "+item.Sender()),
+			utils.SenderStyle.PaddingLeft(senderPaddingLeft).Render("Sender: "+item.Sender()),
 			utils.ReceiverStyle.PaddingLeft(receiverPaddingLeft).Render("Receiver: "+item.Receiver()),
 			utils.SelectedEmailBodyStyle.Render(item.Body()),
 		),
