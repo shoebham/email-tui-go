@@ -8,65 +8,69 @@ import (
 )
 
 type InboxModel struct {
-	mails          []EmailItem
-	emailListModel []emailListModel
-	currentIdx     int
-	selected       EmailItem
+	mails      []EmailItem
+	currentIdx int
+	selected   EmailItem
 }
 
 type inboxMsg struct {
 	mails []EmailItem
 }
 
+// create a enum of colors that i can access
+
 var (
-	appStyle   = lipgloss.NewStyle().Padding(1, 2)
+	appStyle   = lipgloss.NewStyle().Padding(1, 2).Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})
 	titleStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FFFDF5")).
 			Background(lipgloss.Color("#25A065")).
 			Padding(0, 1)
-
-	borderStyle = lipgloss.NewStyle().
-			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#25A065")).
-			Padding(1, 2)
 
 	statusMessageStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
 				Render
 
 	senderStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-			Padding(0, 1).
-			Render
+			Bold(true).
+			Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White})
+
+	subjectStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})
 
 	receiverStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#A9A9A9")).
 			Padding(0, 1).
 			Render
 
+	bottomBorder = lipgloss.Border{
+		Bottom: "─",
+	}
 	// Styling for the email list items
 	normalItemStyle = lipgloss.NewStyle().
-			Padding(0, 1).
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#25A065")).
-			Width(100).
-			Height(3)
+			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+			Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+			Border(bottomBorder).
+			BorderForeground().
+			Width(100)
 
 	selectedItemStyle = lipgloss.NewStyle().
-				Background(lipgloss.Color("#FFFFFF")).
-				Foreground(lipgloss.Color("#FFFFFF")).
-				Padding(0, 1).
+				Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("#FFFDF5")).
-				Width(100).
-				Height(3)
+				BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Width(100)
 
-	subjectStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("#FFFDF5"))
+	selectedSenderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
 
-	bodyStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#A9A9A9"))
+	selectedSubjectStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
 )
 
 func fetchEmails() tea.Msg {
@@ -117,34 +121,11 @@ func InitialInboxModel() *InboxModel {
 	return &InboxModel{
 		mails:    mails,
 		selected: EmailItem{},
-		emailListModel: []emailListModel{{
-			sender:    "shubham",
-			subject:   "Welcome to our service!",
-			shortBody: "This is a sample email body.",
-		}, {
-			sender:    "shubham",
-			subject:   "Welcome to our service!",
-			shortBody: "This is a sample email body.",
-		}, {
-			sender:    "shubham",
-			subject:   "Welcome to our service!",
-			shortBody: "This is a sample email body.",
-		}, {
-			sender:    "shubham",
-			subject:   "Welcome to our service!",
-			shortBody: "This is a sample email body.",
-		}, {
-			sender:    "shubham",
-			subject:   "Welcome to our service!",
-			shortBody: "This is a sample email body.",
-		},
-		},
 	}
 
 }
 
 func (m *InboxModel) Init() tea.Cmd {
-
 	return fetchEmails
 }
 func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -157,7 +138,7 @@ func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "j", "down":
-			if m.currentIdx <= len(m.mails) {
+			if m.currentIdx < len(m.mails)-1 {
 				m.currentIdx++
 			}
 		case "k", "up":
@@ -165,7 +146,7 @@ func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.currentIdx--
 			}
 		case "enter":
-			if m.currentIdx <= len(m.mails) {
+			if m.currentIdx < len(m.mails) {
 				selectedEmail := m.mails[m.currentIdx]
 				m.selected = selectedEmail
 			}
@@ -197,19 +178,16 @@ func (m *InboxModel) View() string {
 		m = InitialInboxModel()
 	}
 	s += titleStyle.Render("📧 Inbox") + "\n\n"
-
-	for i, email := range m.emailListModel {
+	for i, email := range m.mails {
 		style := normalItemStyle
+		sender := senderStyle.Render(email.sender)
+		subject := subjectStyle.Render(email.subject)
 		if i == m.currentIdx {
 			style = selectedItemStyle
+			sender = selectedSenderStyle.Render(email.sender)
+			subject = selectedSubjectStyle.Render(email.subject)
 		}
-
-		content := fmt.Sprintf("%s\n%s\n%s",
-			subjectStyle.Render(email.subject),
-			senderStyle(email.sender),
-			bodyStyle.Render(email.shortBody),
-		)
-
+		content := fmt.Sprintf("%s\t%s", sender, subject)
 		s += style.Render(content) + "\n"
 	}
 

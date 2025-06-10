@@ -71,7 +71,7 @@ func selectedEmailView(item EmailItem) string {
 				fmt.Sprintf(
 					"Description: %s\nSender: %s\nReceiver: %s",
 					item.Body(),
-					senderStyle(item.Sender()),
+					senderStyle.Render(item.Sender()),
 					receiverStyle(item.Receiver()),
 				),
 			) + "\n" +
