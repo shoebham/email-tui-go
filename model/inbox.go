@@ -20,7 +20,10 @@ type inboxMsg struct {
 // create a enum of colors that i can access
 
 var (
-	appStyle   = lipgloss.NewStyle().Padding(1, 2).Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})
+	appStyle = lipgloss.NewStyle().
+			Padding(1, 2).
+			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black})
+
 	titleStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FFFDF5")).
 			Background(lipgloss.Color("#25A065")).
@@ -56,20 +59,20 @@ var (
 			Width(100)
 
 	selectedItemStyle = lipgloss.NewStyle().
-				Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
 				Width(100)
 
 	selectedSenderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
 				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
 
 	selectedSubjectStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
+				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
 				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
 )
 
@@ -180,14 +183,15 @@ func (m *InboxModel) View() string {
 	s += titleStyle.Render("📧 Inbox") + "\n\n"
 	for i, email := range m.mails {
 		style := normalItemStyle
+
 		sender := senderStyle.Render(email.sender)
-		subject := subjectStyle.Render(email.subject)
+		subject := subjectStyle.PaddingLeft(2).Render(email.subject)
 		if i == m.currentIdx {
 			style = selectedItemStyle
 			sender = selectedSenderStyle.Render(email.sender)
-			subject = selectedSubjectStyle.Render(email.subject)
+			subject = selectedSubjectStyle.PaddingLeft(2).Render(email.subject)
 		}
-		content := fmt.Sprintf("%s\t%s", sender, subject)
+		content := fmt.Sprintf("%s%s", sender, subject)
 		s += style.Render(content) + "\n"
 	}
 
