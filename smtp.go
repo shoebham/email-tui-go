@@ -56,6 +56,17 @@ func initAuth() {
 	isLoggedIn = true
 }
 
+func initAuthWith(username, password string) {
+	smtpHost = os.Getenv("smtpHost")
+	smtpPort = os.Getenv("smtpPort")
+
+	if smtpHost == "" || smtpPort == "" {
+		log.Fatal("SMTP host or port not set in environment variables")
+	}
+	auth = smtp.PlainAuth("", username, password, smtpHost)
+	isLoggedIn = true
+}
+
 func handleConnection(conn net.Conn) {
 	initAuth()
 	defer conn.Close()
