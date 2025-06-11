@@ -1,6 +1,9 @@
 package utils
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"fmt"
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	AppStyle = lipgloss.NewStyle().
@@ -81,3 +84,18 @@ var (
 				Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
 				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
 )
+
+var FocusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("012"))
+
+var BlurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+
+var CursorStyle = FocusedStyle
+
+var NoStyle = lipgloss.NewStyle()
+
+var HelpStyle = BlurredStyle
+
+var CursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+
+var FocusedButton = FocusedStyle.Render("[ Submit ]")
+var BlurredButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Submit"))

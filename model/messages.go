@@ -6,3 +6,5 @@ type LoginSuccessMsg struct {
 type SelectedEmailMsg struct {
 	Email EmailItem
 }
+
+type NewMailMsg struct{}

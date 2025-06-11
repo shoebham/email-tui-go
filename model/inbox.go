@@ -109,6 +109,10 @@ func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.selected != (EmailItem{}) {
 				m.selected = EmailItem{}
 			}
+		case "ctrl+n":
+			return m, func() tea.Msg {
+				return NewMailMsg{}
+			}
 		}
 	}
 

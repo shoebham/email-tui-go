@@ -1,11 +1,11 @@
 package model
 
 import (
+	"email-client/utils"
 	"fmt"
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"strings"
 )
 
@@ -16,17 +16,7 @@ type LoginModel struct {
 	output     string
 }
 
-var (
-	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("012"))
-	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	cursorStyle         = focusedStyle
-	noStyle             = lipgloss.NewStyle()
-	helpStyle           = blurredStyle
-	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-
-	focusedButton = focusedStyle.Render("[ Submit ]")
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
-)
+var ()
 
 func InitialLoginModel() *LoginModel {
 	m := LoginModel{inputs: make([]textinput.Model, 2)}
@@ -35,7 +25,7 @@ func InitialLoginModel() *LoginModel {
 
 	for i := range m.inputs {
 		t = textinput.New()
-		t.Cursor.Style = cursorStyle
+		t.Cursor.Style = utils.CursorStyle
 		t.CharLimit = 32
 
 		switch i {
@@ -111,12 +101,12 @@ func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			for i := range m.inputs {
 				if i == m.focusIndex {
 					cmds[i] = m.inputs[i].Focus() // returns a Cmd to set focus
-					m.inputs[i].PromptStyle = focusedStyle
-					m.inputs[i].TextStyle = focusedStyle
+					m.inputs[i].PromptStyle = utils.FocusedStyle
+					m.inputs[i].TextStyle = utils.FocusedStyle
 				} else {
 					m.inputs[i].Blur() // returns updated model and cmd
-					m.inputs[i].PromptStyle = noStyle
-					m.inputs[i].TextStyle = noStyle
+					m.inputs[i].PromptStyle = utils.NoStyle
+					m.inputs[i].TextStyle = utils.NoStyle
 				}
 			}
 
@@ -150,15 +140,15 @@ func (m LoginModel) View() string {
 			b.WriteRune('\n')
 		}
 	}
-	button := &blurredButton
+	button := &utils.BlurredButton
 	if m.focusIndex == len(m.inputs) {
-		button = &focusedButton
+		button = &utils.FocusedButton
 	}
 
 	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
-	b.WriteString(helpStyle.Render("cursor mode is "))
-	b.WriteString(cursorModeHelpStyle.Render(m.cursorMode.String()))
-	b.WriteString(helpStyle.Render(" (ctrl+r to change style)"))
+	b.WriteString(utils.HelpStyle.Render("cursor mode is "))
+	b.WriteString(utils.CursorModeHelpStyle.Render(m.cursorMode.String()))
+	b.WriteString(utils.HelpStyle.Render(" (ctrl+r to change style)"))
 
 	return b.String()
 }

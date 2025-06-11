@@ -12,6 +12,7 @@ const (
 	loginPage page = iota
 	inboxPage
 	emailPage
+	newMailPage
 )
 
 type rootModel struct {
@@ -19,6 +20,7 @@ type rootModel struct {
 	inbox       *model.InboxModel
 	login       *model.LoginModel
 	email       *model.EmailModel
+	newMail     *model.NewMailModel
 }
 
 func (m *rootModel) Init() tea.Cmd {
@@ -29,6 +31,8 @@ func (m *rootModel) Init() tea.Cmd {
 		return m.inbox.Init()
 	case emailPage:
 		return m.email.Init()
+	case newMailPage:
+		return m.newMail.Init()
 	default:
 		return nil
 	}
@@ -60,7 +64,10 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case model.LoginSuccessMsg:
 		m.currentPage = inboxPage
 		return m, m.inbox.Init()
-
+	case model.NewMailMsg:
+		m.newMail = model.InitialNewMailModel()
+		m.currentPage = newMailPage
+		return m, m.newMail.Init()
 	}
 
 	switch m.currentPage {
@@ -84,6 +91,13 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		updatedModel, cmd := m.login.Update(msg)
 		m.login = updatedModel.(*model.LoginModel)
 		return m, cmd
+	case newMailPage:
+		var cmd tea.Cmd
+		updatedModel, cmd := m.newMail.Update(msg)
+		m.newMail = updatedModel.(*model.NewMailModel)
+		if cmd != nil {
+			return m, cmd
+		}
 	default:
 		panic("unhandled default case")
 	}
@@ -98,6 +112,8 @@ func (m *rootModel) View() string {
 		return m.login.View()
 	case emailPage:
 		return m.email.View()
+	case newMailPage:
+		return m.newMail.View()
 	default:
 		panic("unhandled default case")
 	}
