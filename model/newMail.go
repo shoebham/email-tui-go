@@ -2,15 +2,25 @@ package model
 
 import (
 	"email-client/utils"
+	"fmt"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"strings"
 )
 
+const (
+	to = iota
+	subject
+	body
+	send
+)
+
 type NewMailModel struct {
 	textInputs []textinput.Model
 	focusIndex int
+	body       textarea.Model
 }
 
 func (m *NewMailModel) Init() tea.Cmd {
@@ -20,11 +30,15 @@ func (m *NewMailModel) Init() tea.Cmd {
 
 func InitialNewMailModel() *NewMailModel {
 	m := NewMailModel{
-		textInputs: make([]textinput.Model, 3),
+		textInputs: make([]textinput.Model, 2),
 		focusIndex: 0,
+		body:       textarea.New(),
 	}
 
 	var t textinput.Model
+	var body textarea.Model
+	body = textarea.New()
+	body.Placeholder = "Enter your message here"
 
 	for i := range m.textInputs {
 		t = textinput.New()
@@ -37,19 +51,15 @@ func InitialNewMailModel() *NewMailModel {
 			t.Focus()
 			t.Prompt = "To: "
 			t.Width = 50
-
 		case 1:
 			t.Placeholder = "Enter subject"
 			t.Prompt = "Subject: "
 			t.Width = 50
 			t.CharLimit = 128
-		case 2:
-			t.Placeholder = "Enter body"
-			t.Prompt = "Body: "
-			t.Width = 50
 
 		}
 		m.textInputs[i] = t
+		m.body = body
 	}
 	return &m
 }
@@ -60,7 +70,8 @@ func (m *NewMailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "tab", "shift+tab", "enter", "up", "down":
+		case "tab", "shift+tab", "up", "down":
+
 			s := msg.String()
 			// Cycle focus index
 			if s == "up" || s == "shift+tab" {
@@ -68,10 +79,15 @@ func (m *NewMailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.focusIndex++
 			}
-			if m.focusIndex > len(m.textInputs) {
-				m.focusIndex = 0
-			} else if m.focusIndex < 0 {
-				m.focusIndex = len(m.textInputs)
+			if m.focusIndex > send {
+				m.focusIndex = to
+			}
+			if m.focusIndex < to {
+				m.focusIndex = send
+
+			}
+			if m.focusIndex == body {
+				m.body.Focus()
 			}
 
 			cmds := make([]tea.Cmd, len(m.textInputs))
@@ -79,11 +95,28 @@ func (m *NewMailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == m.focusIndex {
 					cmds[i] = m.textInputs[i].Focus()
 					m.textInputs[i].PromptStyle = utils.FocusedStyle
+					m.body.Blur()
 				} else {
 					m.textInputs[i].Blur() // returns updated model and cmd
 					m.textInputs[i].PromptStyle = utils.NoStyle
 					m.textInputs[i].TextStyle = utils.NoStyle
 				}
+			}
+		case "enter":
+			if m.focusIndex == send {
+				// Handle sending the email
+				to := m.textInputs[0].Value()
+				subject := m.textInputs[1].Value()
+				body := m.body.Value()
+
+				// Here you would typically send the email using an SMTP client or similar.
+				// For now, we will just print it to the console.
+				fmt.Printf("Sending email to: %s\nSubject: %s\nBody: %s\n", to, subject, body)
+
+				// Reset the model after sending
+				return InitialNewMailModel(), nil
+			} else {
+				m.textInputs[m.focusIndex].Blur()
 			}
 		case "ctrl+backspace":
 			// Handle backspace to go back to the inbox
@@ -112,21 +145,35 @@ func (m *NewMailModel) View() string {
 		}
 
 	}
+
+	sendButton := utils.BlurredButton
+	if m.focusIndex == send {
+		sendButton = utils.FocusedButton
+		m.body.Blur()
+	}
+	body := fmt.Sprintf(
+		"Body.\n\n%s\n\n%s",
+		m.body.View(),
+		"(ctrl+c to quit)",
+	) + "\n\n"
 	s += b.String() + "\n\n"
+	s += body
+	s += sendButton + "\n\n"
 	return utils.AppStyle.Render(s)
 
 }
 
 func (m *NewMailModel) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.textInputs))
+	var cmd tea.Cmd
 
 	// Only text inputs with Focus() set will respond, so it's safe to simply
 	// update all of them here without any further logic.
 	for i := range m.textInputs {
-
 		m.textInputs[i], cmds[i] = m.textInputs[i].Update(msg)
 	}
-
+	m.body, cmd = m.body.Update(msg)
+	cmds = append(cmds, cmd)
 	for i, input := range m.textInputs {
 		if i == m.focusIndex {
 			input.PromptStyle = utils.FocusedStyle

@@ -104,3 +104,6 @@ var BlurredButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Submit"))
 var PlaceholderStyle = lipgloss.NewStyle().
 	Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
 	Foreground(lipgloss.AdaptiveColor{Light: Gray, Dark: Gray})
+
+var BlurredSendButton = BlurredStyle.Render("[ Send ]")
+var FocusedSendButton = FocusedStyle.Render("[ Send ]")
