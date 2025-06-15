@@ -2,7 +2,6 @@ package model
 
 import (
 	"email-client/utils"
-	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -37,12 +36,18 @@ func InitialNewMailModel() *NewMailModel {
 			t.Placeholder = "Enter recipient email"
 			t.Focus()
 			t.Prompt = "To: "
+			t.Width = 50
+
 		case 1:
 			t.Placeholder = "Enter subject"
 			t.Prompt = "Subject: "
+			t.Width = 50
+			t.CharLimit = 128
 		case 2:
 			t.Placeholder = "Enter body"
 			t.Prompt = "Body: "
+			t.Width = 50
+
 		}
 		m.textInputs[i] = t
 	}
@@ -80,6 +85,12 @@ func (m *NewMailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.textInputs[i].TextStyle = utils.NoStyle
 				}
 			}
+		case "ctrl+backspace":
+			// Handle backspace to go back to the inbox
+			return m, func() tea.Msg {
+				return SelectedEmailMsg{Email: EmailItem{}}
+			}
+
 		}
 	}
 	// Handle character input and blinking
@@ -88,21 +99,21 @@ func (m *NewMailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 func (m *NewMailModel) View() string {
+	var s string
+	s += utils.TitleStyle.Render("New Mail") + "\n\n"
+	// Render each text input
+	// and add a newline between them.
 	var b strings.Builder
-	for i := range m.textInputs {
-		b.WriteString(m.textInputs[i].View())
+	for i, input := range m.textInputs {
+		m.textInputs[i].PlaceholderStyle = utils.PlaceholderStyle
+		b.WriteString(input.View())
 		if i < len(m.textInputs)-1 {
 			b.WriteRune('\n')
 		}
-	}
-	button := &utils.BlurredButton
-	if m.focusIndex == len(m.textInputs) {
-		button = &utils.FocusedButton
-	}
 
-	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
-
-	return b.String()
+	}
+	s += b.String() + "\n\n"
+	return utils.AppStyle.Render(s)
 
 }
 
@@ -112,7 +123,19 @@ func (m *NewMailModel) updateInputs(msg tea.Msg) tea.Cmd {
 	// Only text inputs with Focus() set will respond, so it's safe to simply
 	// update all of them here without any further logic.
 	for i := range m.textInputs {
+
 		m.textInputs[i], cmds[i] = m.textInputs[i].Update(msg)
+	}
+
+	for i, input := range m.textInputs {
+		if i == m.focusIndex {
+			input.PromptStyle = utils.FocusedStyle
+			input.CompletionStyle = utils.FocusedStyle
+			input.TextStyle = utils.PlaceholderStyle
+		} else {
+			input.PromptStyle = utils.NoStyle
+		}
+		m.textInputs[i] = input
 	}
 
 	return tea.Batch(cmds...)

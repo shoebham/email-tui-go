@@ -85,7 +85,9 @@ var (
 				Background(lipgloss.AdaptiveColor{Light: Black, Dark: White})
 )
 
-var FocusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("012"))
+var FocusedStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+	Foreground(lipgloss.Color("012"))
 
 var BlurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 
@@ -99,3 +101,6 @@ var CursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 
 var FocusedButton = FocusedStyle.Render("[ Submit ]")
 var BlurredButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Submit"))
+var PlaceholderStyle = lipgloss.NewStyle().
+	Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+	Foreground(lipgloss.AdaptiveColor{Light: Gray, Dark: Gray})
