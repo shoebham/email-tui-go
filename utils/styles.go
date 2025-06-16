@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -37,9 +38,9 @@ var (
 	// Styling for the email list items
 	NormalItemStyle = lipgloss.NewStyle().
 			Background(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
-			Foreground(lipgloss.AdaptiveColor{Light: White, Dark: Black}).
+			Foreground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
 			Border(bottomBorder).
-			BorderForeground().
+			BorderForeground(lipgloss.AdaptiveColor{Light: Black, Dark: White}).
 			Width(100)
 
 	SelectedItemStyle = lipgloss.NewStyle().

@@ -21,6 +21,8 @@ type rootModel struct {
 	login       *model.LoginModel
 	email       *model.EmailModel
 	newMail     *model.NewMailModel
+	width       int
+	height      int
 }
 
 func (m *rootModel) Init() tea.Cmd {
@@ -48,7 +50,24 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
-
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		switch m.currentPage {
+		case loginPage:
+			m.login.Width = msg.Width
+			m.login.Height = msg.Height
+		case inboxPage:
+			m.inbox.Width = msg.Width
+			m.inbox.Height = msg.Height
+		case emailPage:
+			m.email.Width = msg.Width
+			m.email.Height = msg.Height
+		case newMailPage:
+			m.newMail.Width = msg.Width
+			m.newMail.Height = msg.Height
+		}
+		return m, nil
 	case model.SelectedEmailMsg:
 		if msg.Email == (model.EmailItem{}) {
 			m.currentPage = inboxPage
@@ -59,13 +78,19 @@ func (m *rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.currentPage = emailPage
 		}
+		m.email.Width = m.width
+		m.email.Height = m.height
 		return m, nil
 
 	case model.LoginSuccessMsg:
 		m.currentPage = inboxPage
+		m.inbox.Width = m.width
+		m.inbox.Height = m.height
 		return m, m.inbox.Init()
 	case model.NewMailMsg:
 		m.newMail = model.InitialNewMailModel()
+		m.newMail.Width = m.width
+		m.newMail.Height = m.height
 		m.currentPage = newMailPage
 		return m, m.newMail.Init()
 	}

@@ -11,6 +11,8 @@ type InboxModel struct {
 	mails      []EmailItem
 	currentIdx int
 	selected   EmailItem
+	Width      int
+	Height     int
 }
 
 type inboxMsg struct {
@@ -84,7 +86,10 @@ func (m *InboxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width
+		m.Height = msg.Height
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -148,5 +153,5 @@ func (m *InboxModel) View() string {
 		s += style.Render(content) + "\n"
 	}
 
-	return utils.AppStyle.Render(s)
+	return utils.AppStyle.Width(m.Width).Height(m.Height).Render(s)
 }

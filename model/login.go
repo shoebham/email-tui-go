@@ -3,10 +3,11 @@ package model
 import (
 	"email-client/utils"
 	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"strings"
 )
 
 type LoginModel struct {
@@ -14,6 +15,8 @@ type LoginModel struct {
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
 	output     string
+	Width      int
+	Height     int
 }
 
 var ()
@@ -54,6 +57,10 @@ func (m *LoginModel) Init() tea.Cmd {
 
 func (m *LoginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width
+		m.Height = msg.Height
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
@@ -145,10 +152,11 @@ func (m LoginModel) View() string {
 		button = &utils.FocusedButton
 	}
 
-	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
-	b.WriteString(utils.HelpStyle.Render("cursor mode is "))
-	b.WriteString(utils.CursorModeHelpStyle.Render(m.cursorMode.String()))
-	b.WriteString(utils.HelpStyle.Render(" (ctrl+r to change style)"))
+	var s string
+	butt := fmt.Sprintf("\n\n%s\n\n%s", *button, "(ctrl+c to quit)")
+	s += b.String() + "\n\n"
+	s += butt
 
-	return b.String()
+	return utils.AppStyle.Width(m.Width).Height(m.Height).Render(s)
+	//return b.String()
 }

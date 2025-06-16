@@ -21,6 +21,8 @@ type NewMailModel struct {
 	textInputs []textinput.Model
 	focusIndex int
 	body       textarea.Model
+	Width      int
+	Height     int
 }
 
 func (m *NewMailModel) Init() tea.Cmd {
@@ -159,7 +161,7 @@ func (m *NewMailModel) View() string {
 	s += b.String() + "\n\n"
 	s += body
 	s += sendButton + "\n\n"
-	return utils.AppStyle.Render(s)
+	return utils.AppStyle.Width(m.Width).Height(m.Height).Render(s)
 
 }
 

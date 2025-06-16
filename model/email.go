@@ -9,6 +9,8 @@ import (
 
 type EmailModel struct {
 	CurrentItem EmailItem
+	Width       int
+	Height      int
 }
 type EmailItem struct {
 	subject  string
@@ -55,7 +57,7 @@ func (m *EmailModel) View() string {
 		return "No email selected"
 	}
 	s := selectedEmailView(m.CurrentItem)
-	return utils.AppStyle.Render(s)
+	return utils.AppStyle.Width(m.Width).Height(m.Height).Render(s)
 }
 
 func selectedEmailView(item EmailItem) string {
