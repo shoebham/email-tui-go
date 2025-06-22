@@ -11,6 +11,8 @@ import (
 )
 
 type LoginModel struct {
+	state string
+
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
