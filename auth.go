@@ -19,6 +19,7 @@ func initOAuthConfig() {
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		Scopes: []string{"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
+			"https://mail.google.com/",
 		},
 		Endpoint:    google.Endpoint,
 		RedirectURL: "http://localhost:8080/callback",
@@ -58,5 +59,5 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	w.Write(userData)
-
+	LoginAndFetch(token.AccessToken)
 }
